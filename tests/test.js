@@ -103,7 +103,7 @@ describe("Agama test", function () {
     }
   });
 
-  it("should have Agama page title super dupi dupi", async function () {
+  it("should have Agama page title great and awesome", async function () {
     expect(await page.title()).to.eql("Agama");
   });
 
