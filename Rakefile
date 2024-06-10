@@ -13,6 +13,6 @@ task :install do
     destdir = ENV["DESTDIR"] || "/"
 
     puts "Installing the integration tests..."
-    FileUtils.mkdir_p(File.join(destdir, "/usr/share/agama/puppeteer/tests"))
-    FileUtils.cp_r(".", File.join(destdir, "/usr/share/agama/puppeteer/tests"))
+    FileUtils.mkdir_p(File.join(destdir, "/usr/share/agama/puppeteer"))
+    FileUtils.cp_r(".", File.join(destdir, "/usr/share/agama/puppeteer"))
 end
