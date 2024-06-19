@@ -5,7 +5,7 @@ set -eu
 
 MYDIR=$(realpath "$(dirname "$0")")
 
-if [ -e "$MYDIR/../.git/" ]; then
+if [ -e "$MYDIR/.git/" ]; then
   echo "Running in Git..."
 
   if [ ! -e node_modules ]; then
