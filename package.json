@@ -8,6 +8,7 @@
   "devDependencies": {
     "@types/chai": "^4.3.16",
     "@types/mocha": "^10.0.6",
-    "typescript": "^5.4.5"
+    "path": "^0.12.7",
+    "typescript": "^5.5.2"
   }
 }
