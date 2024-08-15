@@ -53,7 +53,7 @@ function browserSettings(name) {
     }
 }
 const agamaServer = process.env.AGAMA_SERVER || "http://localhost";
-const agamaPassword = process.env.AGAMA_PASSWORD || "zGrrG6Tk";
+const agamaPassword = process.env.AGAMA_PASSWORD || "linux";
 const agamaBrowser = process.env.AGAMA_BROWSER || "firefox";
 const slowMo = parseInt(process.env.AGAMA_SLOWMO || '0');
 const headless = booleanEnv("AGAMA_HEADLESS", true);
@@ -117,10 +117,9 @@ describe("Agama test", function () {
         ]);
         if (productSelectionDisplayed) {
             await page.locator("::-p-text('openSUSE Tumbleweed')").click();
-            await page.locator("button[form='productSelectionForm']")
-                // wait until the button is enabled
-                .setWaitForEnabled(true)
-                .click();
+            await page.locator("button[form='productSelectionForm']").click();
+            // Workaround to trust on unexpected product signing key
+            await page.locator("button::-p-text(Trust)").click();
             // refreshing the repositories might take long time
             await page.locator("h3::-p-text('Overview')").setTimeout(60000).wait();
         }
@@ -139,16 +138,13 @@ describe("Agama test", function () {
             page.waitForSelector("button#actions-for-root-password")
         ]);
         await button.click();
-        const id = (await button.getProperty("id")).toString();
+        const id = await button.evaluate((x) => x.id);
         // drop the handler to avoid memory leaks
         button.dispose();
         // if the menu button was clicked we need to additionally press the "Change" menu item
-        if (id === "JSHandle:actions-for-root-password") {
+        if (id === "actions-for-root-password") {
             await page.locator("button[role='menuitem']::-p-text('Change')").click();
         }
-        // const newPassword = "test";
-        // await page.type("input#password", newPassword);
-        // await page.type("input#passwordConfirmation", newPassword);
         const newPassword = "test";
         await page.locator("input#password").fill(newPassword);
         await page.locator("input#passwordConfirmation").fill(newPassword);

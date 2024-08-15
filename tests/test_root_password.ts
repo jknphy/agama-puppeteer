@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-import puppeteer from "puppeteer-core";
+import puppeteer, { ElementHandle } from "puppeteer-core";
 import { expect } from "chai";
 
 // This is an example file for running Agama integration tests using Puppeteer.
@@ -63,7 +63,7 @@ function browserSettings(name: string): BrowserSettings {
 }
 
 const agamaServer = process.env.AGAMA_SERVER || "http://localhost";
-const agamaPassword = process.env.AGAMA_PASSWORD || "zGrrG6Tk";
+const agamaPassword = process.env.AGAMA_PASSWORD || "linux";
 const agamaBrowser = process.env.AGAMA_BROWSER || "firefox";
 const slowMo = parseInt(process.env.AGAMA_SLOWMO || '0');
 const headless = booleanEnv("AGAMA_HEADLESS", true);
@@ -136,10 +136,11 @@ describe("Agama test", function () {
 
         if (productSelectionDisplayed) {
             await page.locator("::-p-text('openSUSE Tumbleweed')").click();
-            await page.locator("button[form='productSelectionForm']")
-                // wait until the button is enabled
-                .setWaitForEnabled(true)
-                .click();
+            await page.locator("button[form='productSelectionForm']").click();
+
+            // Workaround to trust on unexpected product signing key
+            await page.locator("button::-p-text(Trust)").click();
+
             // refreshing the repositories might take long time
             await page.locator("h3::-p-text('Overview')").setTimeout(60000).wait();
         } else {
@@ -155,24 +156,22 @@ describe("Agama test", function () {
     it("should allow setting the root password", async function () {
         await page.locator("a[href='#/users']").click();
 
-        let button = await Promise.any([
+        let button: any = await Promise.any([
             page.waitForSelector("button::-p-text(Set a password)"),
             page.waitForSelector("button#actions-for-root-password")
         ]);
 
         await button!.click();
-        const id = (await button!.getProperty("id")).toString();
+
+        const id = await button!.evaluate((x: { id: any; }) => x.id);
         // drop the handler to avoid memory leaks
         button!.dispose();
 
         // if the menu button was clicked we need to additionally press the "Change" menu item
-        if (id === "JSHandle:actions-for-root-password") {
+        if (id === "actions-for-root-password") {
             await page.locator("button[role='menuitem']::-p-text('Change')").click();
         }
 
-        // const newPassword = "test";
-        // await page.type("input#password", newPassword);
-        // await page.type("input#passwordConfirmation", newPassword);
         const newPassword = "test";
         await page.locator("input#password").fill(newPassword);
         await page.locator("input#passwordConfirmation").fill(newPassword);
