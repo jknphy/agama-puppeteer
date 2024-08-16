@@ -65,8 +65,9 @@ function browserSettings(name: string): BrowserSettings {
 const agamaServer = process.env.AGAMA_SERVER || "http://localhost";
 const agamaPassword = process.env.AGAMA_PASSWORD || "linux";
 const agamaBrowser = process.env.AGAMA_BROWSER || "firefox";
-const slowMo = parseInt(process.env.AGAMA_SLOWMO || '0');
-const headless = booleanEnv("AGAMA_HEADLESS", true);
+const agamaSlowMo = parseInt(process.env.AGAMA_SLOWMO || '0');
+const agamaHeadless = booleanEnv("AGAMA_HEADLESS", true);
+const agamaInstall = booleanEnv("AGAMA_INSTALL", true);
 
 describe("Agama test", function () {
     // mocha timeout
@@ -79,10 +80,10 @@ describe("Agama test", function () {
         browser = await puppeteer.launch({
             // "webDriverBiDi" does not work with old FireFox, comment it out if needed
             protocol: "webDriverBiDi",
-            headless,
+            headless: agamaHeadless,
             ignoreHTTPSErrors: true,
             timeout: 30000,
-            slowMo,
+            slowMo: agamaSlowMo,
             defaultViewport: {
                 width: 1200,
                 height: 768
@@ -179,9 +180,39 @@ describe("Agama test", function () {
         await page.locator("button::-p-text(Confirm)").click();
     });
 
-    // it("should be ready for installation", async function () {
-    //   await page.locator("a[href='#/overview']").click();
-    //   await page.locator("h4::-p-text('Ready for installation')").wait();
-    //   await page.locator("button::-p-text(Install)").wait();
-    // });
+    it("should be ready for installation", async function () {
+        await page.locator("a[href='#/overview']").click();
+        await page.locator("h4::-p-text('Ready for installation')").wait();
+    });
+
+    // For development will be useful to stop before starting installation
+    if (agamaInstall === true) {
+        it("should start installation", async function () {
+            await page.locator("button::-p-text('Install')").click();
+            await page.locator("button::-p-text('Continue')").click();
+
+            // Check if installation procedure is progressing
+            let progressTitle = await page
+                .locator("#progress-title")
+                .map(header => (header as HTMLElement).innerText)
+                .wait();
+            expect(progressTitle).to.eql("Installing the system, please wait ...")
+        });
+
+        it("should finish installation", async function () {
+            let timeout = 15 * 60 * 1000;
+            this.timeout(timeout);
+            let congratsHeader = await page
+                .locator("h2::-p-text('Congratulations!')")
+                .setTimeout(timeout)
+                .map(header => header.innerText)
+                .wait();
+
+            expect(congratsHeader).to.eql("Congratulations!");
+        });
+
+        it("should allow rebooting", async function () {
+            await page.locator("button::-p-text('Reboot')").click()
+        });
+    }
 })
