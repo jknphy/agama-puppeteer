@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import puppeteer from "puppeteer-core";
 import { expect } from "chai";
+import { LoginAsRootPage } from "../pom/login-as-root-page.js";
 // This is an example file for running Agama integration tests using Puppeteer.
 //
 // If the test fails it saves the page screenshot and the HTML page dump to
@@ -103,8 +104,10 @@ describe("Agama test", function () {
         expect(await page.title()).to.eql("Agama");
     });
     it("allows logging in", async function () {
-        await page.type("input#password", agamaPassword);
-        await page.click("button[type='submit']");
+        // await page.type("input#password", agamaPassword);
+        // await page.click("button[type='submit']");
+        let loginAsRoot = new LoginAsRootPage(page);
+        loginAsRoot.logIn(agamaPassword);
     });
     it("should optionally display the product selection dialog", async function () {
         this.timeout(60000);
