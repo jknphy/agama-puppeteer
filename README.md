@@ -80,6 +80,11 @@ Because the browser is controlled by a script the actions might be too fast to
 watch. Use the `AGAMA_SLOWMO` variable with a delay in miliseconds between the
 actions. A reasonable value is round 50.
 
+### Perform installation
+
+To enable or disable installation use the `AGAMA_INSTALL` variable 
+with value `true` to perform installation and `false` to skip this step.
+
 ## Supported Browsers
 
 The Puppeteer library was originally written for the Chromium browser, but later
