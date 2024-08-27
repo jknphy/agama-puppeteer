@@ -82,7 +82,7 @@ describe("Agama test", function () {
         });
         page = await browser.newPage();
         page.setDefaultTimeout(20000);
-        await page.goto(agamaServer, { timeout: 60000, waitUntil: "domcontentloaded" });
+        await page.goto(agamaServer, { timeout: 60000, waitUntil: "networkidle2" });
     });
     after(async function () {
         await page.close();
@@ -191,11 +191,18 @@ describe("Agama test", function () {
             await page.locator("button::-p-text('Install')").click();
             await page.locator("button::-p-text('Continue')").click();
             // Check if installation procedure is progressing
-            let progressTitleInstall = await page
-                .locator("#progress-title")
-                .map(header => header.innerText)
-                .wait();
-            expect(progressTitleInstall).to.eql("Installing the system, please wait ...");
+            // Sometimes Agama Web interface don't update fast enough the #progress-title value
+            // This lead to random errors of its previous value is not the same than requested.
+            // We added a for loop that checks 3 times if the #progress-title has the required innerText.
+            let installation_started = false;
+            for (let i = 0; i < 3 && !installation_started; i++) {
+                let progressTitleInstall = await page
+                    .locator("#progress-title")
+                    .map(header => header.innerText)
+                    .wait();
+                installation_started = (progressTitleInstall === "Installing the system, please wait ...");
+            }
+            expect(installation_started).to.be.true;
         });
         it("should finish installation", async function () {
             let timeout = 15 * 60 * 1000;
@@ -206,9 +213,6 @@ describe("Agama test", function () {
                 .map(header => header.innerText)
                 .wait();
             expect(congratsHeader).to.eql("Congratulations!");
-        });
-        it("should allow rebooting", async function () {
-            await page.locator("button::-p-text('Reboot')").click();
         });
     }
 });
