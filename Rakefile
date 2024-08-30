@@ -10,9 +10,11 @@ require "yast/rake"
 
 Rake::Task["install"].clear
 task :install do
-    destdir = ENV["DESTDIR"] || "/"
+    integrationdir = "/usr/share/agama/integration-tests"
+    destdir = ENV.has_key?( "DESTDIR" ) ? ENV["DESTDIR"] : integrationdir
+    testdir = File.join(destdir, integrationdir)
 
-    puts "Installing the integration tests..."
-    FileUtils.mkdir_p(File.join(destdir, "/usr/share/agama/puppeteer"))
-    FileUtils.cp_r(".", File.join(destdir, "/usr/share/agama/puppeteer"))
+    puts "Installing the integration tests at #{testdir} folder..."
+    FileUtils.mkdir_p(testdir)
+    FileUtils.cp_r("build", testdir)
 end

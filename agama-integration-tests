@@ -26,7 +26,7 @@ if [ -e "$MYDIR/.git/" ]; then
   # environment and have consistent results
   # "$MYDIR/node-prune.sh"
   # "$MYDIR/node-puppeteer-prune.sh"
-  
+
   npx mocha "${MOCHA_OPTIONS[@]}" "$@"
 else
   # set the default load path
